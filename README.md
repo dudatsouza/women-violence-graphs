@@ -1,0 +1,1 @@
+# Estudo e Análise de Violência Contra Mulheres em Divinópolis Usando Grafos
