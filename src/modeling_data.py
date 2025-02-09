@@ -1,8 +1,33 @@
 import pandas as pd
 import warnings
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Ignorar todos os warnings
 warnings.filterwarnings("ignore")
+
+def grafico_casos_bairros(df, n):
+    # Contar o número de casos por município
+    municipios_top = df["Município"].value_counts().head(n)
+
+    # Configuração do gráfico
+    plt.figure(figsize=(10, 5))
+    sns.barplot(
+        x=municipios_top.values,
+        y=municipios_top.index,
+        palette="Reds_r"  # Cores semelhantes ao gráfico original
+    )
+
+    # Adicionar título e rótulos
+    plt.title(f"Top {n} Municípios com Mais Registros de Violência Contra a Mulher em Minas Gerais")
+    plt.xlabel("Número de Casos")
+    plt.ylabel("Município")
+
+    # Salvar o gráfico
+    n = str(n)
+    file_path = "datasets/output/graphs/gerais/top" + n + "_municipios.png"
+    plt.savefig(file_path, dpi=300, bbox_inches="tight")
+    print("Gráfico salvo em", file_path)
 
 
 def cutting_data(df, cidade):
@@ -264,14 +289,14 @@ def add_possible_bairros(df_nodes, df_aux, df_bairros):
         print("Bairros não encontrados e removidos.")
 
     # Salva os nós referentes aos bairros
-    df_aux.to_csv("./datasets/nodes_bairros.csv", index=False)
+    df_aux.to_csv("datasets/output/dados/nodes-edges/nodes_bairros.csv", index=False)
 
     # Define o tipo para os nós de casos e salva separadamente
 
     df_nodes["N de casos Total"] = None
     df_nodes["N de casos Fatais"] = None
     df_nodes["N de bairros Divisa"] = None
-    df_nodes.to_csv("./datasets/nodes_casos.csv", index=False)
+    df_nodes.to_csv("datasets/output/dados/nodes-edges/nodes_casos.csv", index=False)
 
     df_aux2 = pd.DataFrame(columns=df_nodes.columns)
     df_aux2["ID"] = df_aux["ID"]
@@ -308,7 +333,7 @@ def edges(df_edges, df_nodes):
     # Define o peso para as arestas entre bairros
     df_edges["Weight"] = 2
     df_edges = df_edges.rename(columns={"bairro": "Source", "bairro_divisa": "Target"})
-    df_edges.to_csv("./datasets/edges_bairros.csv", index=False)
+    df_edges.to_csv("datasets/output/dados/nodes-edges/edges_bairros.csv", index=False)
 
     # Cria arestas entre casos e bairros
     df_aux = pd.DataFrame(columns=["Source", "Target", "Weight"])
@@ -321,13 +346,15 @@ def edges(df_edges, df_nodes):
             df_aux = pd.concat([df_aux, pd.DataFrame([linha])], ignore_index=True)
             df_edges = pd.concat([df_edges, pd.DataFrame([linha])], ignore_index=True)
 
-    df_aux.to_csv("./datasets/edges_casos.csv", index=False)
+    df_aux.to_csv("datasets/output/dados/nodes-edges/edges_casos.csv", index=False)
     return df_edges
 
 
 def main():
     # Carregar os dados
-    df = pd.read_csv("./datasets/dados_pre.csv", delimiter=',', encoding='utf-8', engine='python')
+    df = pd.read_csv("datasets/output/dados/dados_pre.csv", delimiter=',', encoding='utf-8', engine='python')
+
+    grafico_casos_bairros(df, 15)
 
     # Filtrar e cortar os dados para a cidade DIVINOPOLIS
     df = cutting_data(df, "DIVINOPOLIS")
@@ -342,11 +369,11 @@ def main():
     df["ID"] = df.index
 
     # Salvar dados processados
-    df.to_csv("./datasets/dados_divinopolis.csv", index=False)
+    df.to_csv("datasets/output/dados/dados_divinopolis.csv", index=False)
     print("Arquivo dados_divinopolis.csv criado com sucesso!")
 
     # Carregar arquivo com os bairros
-    df_bairros = pd.read_csv("./datasets/localidade/bairros_divinopolis.csv", delimiter=';', encoding='utf-8', engine='python')
+    df_bairros = pd.read_csv("datasets/input/localidade/bairros_divinopolis.csv", delimiter=';', encoding='utf-8', engine='python')
     print("Arquivo bairros_divinopolis.csv lido com sucesso!")
 
     # Inicializa DataFrame de arestas (vazio)
@@ -361,7 +388,7 @@ def main():
     print("Casos definidos com sucesso!")
 
     # Salvar os possíveis bairros indexados
-    df_aux.to_csv("./datasets/bairros_possiveis.csv", index=False)
+    df_aux.to_csv("datasets/output/dados/bairros_possiveis.csv", index=False)
 
     # Adicionar os possíveis bairros aos nós e salvar separadamente
     df_nodes = add_possible_bairros(df_nodes, df_aux, df_bairros)
@@ -369,12 +396,12 @@ def main():
 
     # Processar e salvar os nós finais
     df_nodes = nodes(df_nodes)
-    df_nodes.to_csv("./datasets/nodes.csv", index=False)
+    df_nodes.to_csv("datasets/output/dados/nodes-edges/nodes.csv", index=False)
     print("Arquivo nodes.csv criado com sucesso!")
 
     # Processar e salvar as arestas finais
     df_edges = edges(df_edges, df_nodes)
-    df_edges.to_csv("./datasets/edges.csv", index=False)
+    df_edges.to_csv("datasets/output/dados/nodes-edges/edges.csv", index=False)
     print("Arquivo edges.csv criado com sucesso!")
 
 

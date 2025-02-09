@@ -12,6 +12,11 @@ import os
 import igraph as ig
 from leidenalg import find_partition, ModularityVertexPartition
 from networkx.algorithms.community import asyn_lpa_communities  
+import seaborn as sns
+import warnings
+import statsmodels.api as sm
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class HiddenPrints:
     def __enter__(self):
@@ -36,7 +41,7 @@ def grafico_bairro_casos(df_bairros, n):
     plt.grid(axis="y", linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_bairro_casos_" + str(n) + ".png"
+    file_path = "datasets/output/graphs/gerais/grafico_bairro_casos_" + str(n) + ".png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -55,7 +60,31 @@ def grafico_idade_casos(df_nodes):
     plt.title("Idade Aparente por Caso", fontsize=16)
     plt.grid(linestyle="--", alpha=0.7)
 
-    file_path = "./datasets/graphs/grafico_idade_casos.png"
+    file_path = "datasets/output/graphs/gerais/grafico_idade_casos.png"
+    plt.savefig(file_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print("Gráfico salvo em", file_path)
+
+def grafico_distribuicao_idade(df_divinopolis):
+    
+    # Converter a coluna de idade para numérica (caso haja valores não numéricos)
+    df_divinopolis["Idade Aparente"] = pd.to_numeric(df_divinopolis["Idade Aparente"], errors="coerce")
+    
+    # Remover valores nulos
+    df_divinopolis = df_divinopolis.dropna(subset=["Idade Aparente"])
+
+    # Criar o histograma
+    plt.figure(figsize=(10, 5))
+    sns.histplot(df_divinopolis["Idade Aparente"], bins=20, kde=True, color="blue", edgecolor="black", alpha=0.5)
+
+    # Adicionar título e rótulos
+    plt.title("Distribuição da Idade das Vítimas em Divinópolis")
+    plt.xlabel("Idade")
+    plt.ylabel("Número de Casos")
+
+    # Salvar o gráfico
+    file_path = "datasets/output/graphs/gerais/grafico_distribuicao_idade.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -65,15 +94,42 @@ def grafico_cor_casos(df_nodes):
     df_nodes = df_nodes[df_nodes["Tipo"] == 1]
     # plotar aas cores de cada caso de acordo com o seu respectivo bairro
     plt.figure(figsize=(10,7))
-    plt.bar(df_nodes["Bairro"], df_nodes["Raca Cor"], color="skyblue", alpha=0.7)
+    plt.bar(df_nodes["Raca Cor"], df_nodes["Bairro"], color="skyblue", alpha=0.7)
 
-    plt.xlabel("Bairro", fontsize=14)
-    plt.ylabel("Raca Cor", fontsize=14)
+    plt.xlabel("Raca Cor", fontsize=14)
+    plt.ylabel("Bairro", fontsize=14)
 
     plt.title("Raca Cor por Caso", fontsize=16)
     plt.grid(linestyle="--", alpha=0.7)
 
-    file_path = "./datasets/graphs/grafico_cor_casos.png"
+    file_path = "datasets/output/graphs/gerais/grafico_cor_casos.png"
+    plt.savefig(file_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print("Gráfico salvo em", file_path)
+
+def grafico_distribuicao_cor(df_divinopolis):
+    # Contar a frequência de cada categoria de raça/cor
+    raca_cor_counts = df_divinopolis["Raca Cor"].value_counts()
+
+    # Criar o gráfico de barras
+    plt.figure(figsize=(10, 5))
+    sns.barplot(
+        x=raca_cor_counts.index,
+        y=raca_cor_counts.values,
+        palette="Blues_r"  # Cores azuis semelhantes ao gráfico original
+    )
+
+    # Adicionar título e rótulos
+    plt.title("Distribuição por Raça/Cor das Vítimas em Divinópolis")
+    plt.xlabel("Raça/Cor")
+    plt.ylabel("Número de Casos")
+
+    # Ajustar a rotação dos rótulos no eixo X para melhor visualização
+    plt.xticks(rotation=30, ha="right")
+
+    # Salvar o gráfico
+    file_path = "datasets/output/graphs/gerais/grafico_distribuicao_cor.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -91,7 +147,34 @@ def grafico_escolaridade_casos(df_nodes):
     plt.title("Escolaridade por Caso", fontsize=16)
     plt.grid(linestyle="--", alpha=0.7)
 
-    file_path = "./datasets/graphs/grafico_escolaridade_casos.png"
+    file_path = "datasets/output/graphs/gerais/grafico_escolaridade_casos.png"
+    plt.savefig(file_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print("Gráfico salvo em", file_path)
+
+def grafico_distribuicao_escolaridade(df_divinopolis):
+    # Contar a frequência de cada categoria de escolaridade
+    escolaridade_counts = df_divinopolis["Escolaridade"].value_counts()
+
+    # Criar o gráfico de barras
+    plt.figure(figsize=(10, 5))
+    sns.barplot(
+        x=escolaridade_counts.index,
+        y=escolaridade_counts.values,
+        palette="Purples_r"  # Cores roxas semelhantes ao gráfico original
+    )
+
+    # Adicionar título e rótulos
+    plt.title("Distribuição por Escolaridade das Vítimas em Divinópolis")
+    plt.xlabel("Escolaridade")
+    plt.ylabel("Número de Casos")
+
+    # Ajustar a rotação dos rótulos no eixo X para melhor visualização
+    plt.xticks(rotation=45, ha="right")
+
+    # salvar o gráfico
+    file_path = "datasets/output/graphs/gerais/grafico_distribuicao_escolaridade.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -109,7 +192,7 @@ def grafico_classificacao_casos(df_nodes):
     plt.title("Classificacao por Caso", fontsize=16)
     plt.grid(linestyle="--", alpha=0.7)
 
-    file_path = "./datasets/graphs/grafico_classificacao_casos.png"
+    file_path = "datasets/output/graphs/gerais/grafico_classificacao_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
 
@@ -119,13 +202,11 @@ def grafico_media_idade_casos(df_idade, df_bairros, color_map):
     df_idade = df_idade.reset_index(drop=True)
     df_bairros = df_bairros.reset_index(drop=True)
 
-    # 🔹 Criar o mapeamento de cores usando a comunidade detectada no grafo
+    # Criar o mapeamento de cores usando a comunidade detectada no grafo
     comunidades_unicas = df_bairros["Comunidade"].unique()
-
-    # Usar as cores já atribuídas no grafo, se disponíveis
     mapa_cores = {comunidade: color_map.get(comunidade, "gray") for comunidade in comunidades_unicas}
 
-    # 📌 Criar gráfico da média de idade e número de casos
+    # 📌 Criar gráfico da média de idade e número de casos (SEM REGRESSÃO)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -133,7 +214,7 @@ def grafico_media_idade_casos(df_idade, df_bairros, color_map):
         plt.scatter(
             df_bairros.loc[mask, "N de casos Total"],
             df_idade.loc[mask, "Media Idade"],
-            color=mapa_cores[comunidade],  # 🔹 Usar a mesma cor do grafo
+            color=mapa_cores[comunidade],  
             alpha=0.7,
             label=comunidade
         )
@@ -145,12 +226,12 @@ def grafico_media_idade_casos(df_idade, df_bairros, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_media_idade_casos.png"
+    file_path = "datasets/output/graphs/media/grafico_media_idade_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
 
-    # 📌 Criar gráfico do desvio padrão e número de casos
+    # 📌 Criar gráfico do desvio padrão e número de casos (COM LOWESS)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -158,10 +239,26 @@ def grafico_media_idade_casos(df_idade, df_bairros, color_map):
         plt.scatter(
             df_bairros.loc[mask, "N de casos Total"],
             df_idade.loc[mask, "Desvio Padrao Idade"],
-            color=mapa_cores[comunidade],  # 🔹 Usar a mesma cor do grafo
+            color=mapa_cores[comunidade],  
             alpha=0.7,
             label=comunidade
         )
+
+    # 🔹 Conversão para números antes da regressão
+    x = pd.to_numeric(df_bairros["N de casos Total"], errors="coerce")
+    y = pd.to_numeric(df_idade["Desvio Padrao Idade"], errors="coerce")
+
+    # Remover valores NaN para evitar erros
+    mask = ~x.isna() & ~y.isna()
+    x = x[mask]
+    y = y[mask]
+
+    # 🔹 Ajuste com LOWESS (regressão suavizada)
+    lowess_results = sm.nonparametric.lowess(y, x, frac=0.3)  # "frac" controla a suavização
+    x_smooth, y_smooth = zip(*lowess_results)
+
+    # 🔹 Adicionar curva LOWESS
+    plt.plot(x_smooth, y_smooth, color="black", linestyle="--", linewidth=2, label="LOWESS")
 
     plt.ylim(0, None)
     plt.xlabel("N de casos Total", fontsize=14)
@@ -170,7 +267,7 @@ def grafico_media_idade_casos(df_idade, df_bairros, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_desvio_padrao_idade_casos.png"
+    file_path = "datasets/output/graphs/desvio-padrao/grafico_desvio_padrao_idade_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
@@ -179,11 +276,10 @@ def grafico_media_cor_casos(df_cor, df_nodes, color_map):
     df_cor = df_cor.reset_index(drop=True)
     df_nodes = df_nodes.reset_index(drop=True)
 
-    # 🔹 Criar o mapeamento de cores usando a comunidade detectada no grafo
     comunidades_unicas = df_nodes["Comunidade"].unique()
     mapa_cores = {comunidade: color_map.get(comunidade, "gray") for comunidade in comunidades_unicas}
 
-    # 📌 Criar gráfico da média de cor e número de casos
+    # 📌 Criar gráfico da média de cor e número de casos (SEM REGRESSÃO)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -203,12 +299,12 @@ def grafico_media_cor_casos(df_cor, df_nodes, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_media_cor_casos.png"
+    file_path = "datasets/output/graphs/media/grafico_media_cor_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
 
-    # 📌 Criar gráfico do desvio padrão e número de casos
+    # 📌 Criar gráfico do desvio padrão e número de casos (COM LOWESS)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -221,6 +317,22 @@ def grafico_media_cor_casos(df_cor, df_nodes, color_map):
             label=comunidade
         )
 
+    # 🔹 Conversão para números antes da regressão
+    x = pd.to_numeric(df_nodes["N de casos Total"], errors="coerce")
+    y = pd.to_numeric(df_cor["Desvio Padrao Cor"], errors="coerce")
+
+    # Remover valores NaN para evitar erros
+    mask = ~x.isna() & ~y.isna()
+    x = x[mask]
+    y = y[mask]
+
+    # 🔹 Ajuste com LOWESS (regressão suavizada)
+    lowess_results = sm.nonparametric.lowess(y, x, frac=0.3)  # "frac" controla a suavização
+    x_smooth, y_smooth = zip(*lowess_results)
+
+    # 🔹 Adicionar curva LOWESS
+    plt.plot(x_smooth, y_smooth, color="black", linestyle="--", linewidth=2, label="LOWESS")
+
     plt.ylim(0, 1)
     plt.xlabel("N de casos Total", fontsize=14)
     plt.ylabel("Desvio Padrão de Cor", fontsize=14)
@@ -228,7 +340,7 @@ def grafico_media_cor_casos(df_cor, df_nodes, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_desvio_padrao_cor_casos.png"
+    file_path = "datasets/output/graphs/desvio-padrao/grafico_desvio_padrao_cor_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
@@ -240,7 +352,7 @@ def grafico_media_escolaridade_casos(df_escolaridade, df_nodes, color_map):
     comunidades_unicas = df_nodes["Comunidade"].unique()
     mapa_cores = {comunidade: color_map.get(comunidade, "gray") for comunidade in comunidades_unicas}
 
-    # 📌 Criar gráfico da média de escolaridade e número de casos
+    # 📌 Criar gráfico da média de escolaridade e número de casos (SEM REGRESSÃO)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -260,12 +372,12 @@ def grafico_media_escolaridade_casos(df_escolaridade, df_nodes, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_escolaridade_casos.png"
+    file_path = "datasets/output/graphs/media/grafico_media_escolaridade_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
 
-    # 📌 Criar gráfico do desvio padrão e número de casos
+    # 📌 Criar gráfico do desvio padrão de escolaridade e número de casos (COM LOWESS)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -278,6 +390,22 @@ def grafico_media_escolaridade_casos(df_escolaridade, df_nodes, color_map):
             label=comunidade
         )
 
+    # 🔹 Conversão para números antes da regressão
+    x = pd.to_numeric(df_nodes["N de casos Total"], errors="coerce")
+    y = pd.to_numeric(df_escolaridade["Desvio Padrao Escolaridade"], errors="coerce")
+
+    # Remover valores NaN para evitar erros
+    mask = ~x.isna() & ~y.isna()
+    x = x[mask]
+    y = y[mask]
+
+    # 🔹 Ajuste com LOWESS (regressão suavizada)
+    lowess_results = sm.nonparametric.lowess(y, x, frac=0.3)  # "frac" controla a suavização
+    x_smooth, y_smooth = zip(*lowess_results)
+
+    # 🔹 Adicionar curva LOWESS
+    plt.plot(x_smooth, y_smooth, color="black", linestyle="--", linewidth=2, label="LOWESS")
+
     plt.ylim(0, 1)
     plt.xlabel("N de casos Total", fontsize=14)
     plt.ylabel("Desvio Padrão de Escolaridade", fontsize=14)
@@ -285,7 +413,7 @@ def grafico_media_escolaridade_casos(df_escolaridade, df_nodes, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_desvio_padrao_escolaridade_casos.png"
+    file_path = "datasets/output/graphs/desvio-padrao/grafico_desvio_padrao_escolaridade_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
@@ -297,7 +425,7 @@ def grafico_media_classificacao_casos(df_classificacao, df_nodes, color_map):
     comunidades_unicas = df_nodes["Comunidade"].unique()
     mapa_cores = {comunidade: color_map.get(comunidade, "gray") for comunidade in comunidades_unicas}
 
-    # 📌 Criar gráfico da média de classificação e número de casos
+    # 📌 Criar gráfico da média de classificação e número de casos (SEM REGRESSÃO)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -317,12 +445,12 @@ def grafico_media_classificacao_casos(df_classificacao, df_nodes, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_classificacao_casos.png"
+    file_path = "datasets/output/graphs/media/grafico_media_classificacao_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
 
-    # 📌 Criar gráfico do desvio padrão e número de casos
+    # 📌 Criar gráfico do desvio padrão de classificação e número de casos (COM LOWESS)
     plt.figure(figsize=(10,7))
 
     for comunidade in comunidades_unicas:
@@ -335,6 +463,22 @@ def grafico_media_classificacao_casos(df_classificacao, df_nodes, color_map):
             label=comunidade
         )
 
+    # 🔹 Conversão para números antes da regressão
+    x = pd.to_numeric(df_nodes["N de casos Total"], errors="coerce")
+    y = pd.to_numeric(df_classificacao["Desvio Padrao Classificacao"], errors="coerce")
+
+    # Remover valores NaN para evitar erros
+    mask = ~x.isna() & ~y.isna()
+    x = x[mask]
+    y = y[mask]
+
+    # 🔹 Ajuste com LOWESS (regressão suavizada)
+    lowess_results = sm.nonparametric.lowess(y, x, frac=0.3)  # "frac" controla a suavização
+    x_smooth, y_smooth = zip(*lowess_results)
+
+    # 🔹 Adicionar curva LOWESS
+    plt.plot(x_smooth, y_smooth, color="black", linestyle="--", linewidth=2, label="LOWESS")
+
     plt.ylim(0, 1)
     plt.xlabel("N de casos Total", fontsize=14)
     plt.ylabel("Desvio Padrão de Classificação", fontsize=14)
@@ -342,11 +486,10 @@ def grafico_media_classificacao_casos(df_classificacao, df_nodes, color_map):
     plt.grid(linestyle="--", alpha=0.7)
     plt.legend(title="Comunidade")
 
-    file_path = "./datasets/graphs/grafico_desvio_padrao_classificacao_casos.png"
+    file_path = "datasets/output/graphs/desvio-padrao/grafico_desvio_padrao_classificacao_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
     plt.close()
     print("Gráfico salvo em", file_path)
-
 
 def betweenness_centrality(df_nodes, df_edges):
     # 📌 2. Criar o Grafo
@@ -371,8 +514,9 @@ def betweenness_centrality(df_nodes, df_edges):
     ])
 
     # 📌 4. Salvar ou visualizar os resultados
-    bairros_betweenness.to_csv("./datasets/bairros_betweenness.csv", index=False)
-    print("Centralidade Betweenness salva em ./datasets/bairros_betweenness.csv")
+    file_path = "datasets/output/dados/betweenness/bairros_betweenness.csv"
+    bairros_betweenness.to_csv(file_path, index=False)
+    print("Centralidade Betweenness salva em", file_path)
 
 def grafico_betweenness(df_bairros, n):
     # Ordenar por número de casos
@@ -388,7 +532,7 @@ def grafico_betweenness(df_bairros, n):
     plt.grid(axis="y", linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_betweenness_" + str(n) + ".png"
+    file_path = "datasets/output/graphs/betweenness/grafico_betweenness_" + str(n) + ".png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -408,7 +552,7 @@ def grafico_betweenness_casos(df_betweenness, df_bairros):
     plt.grid(linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_betweenness_casos.png"
+    file_path = "datasets/output/graphs/betweenness/grafico_betweenness_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -438,8 +582,9 @@ def closeness_centrality(df_nodes, df_edges):
     ])
 
     # 📌 4. Salvar ou visualizar os resultados
-    bairros_closeness.to_csv("./datasets/bairros_closeness.csv", index=False)
-    print("Centralidade Closeness salva em ./datasets/bairros_closeness.csv")
+    file_path = "datasets/output/dados/closeness/bairros_closeness.csv"
+    bairros_closeness.to_csv(file_path, index=False)
+    print("Centralidade Closeness salva em", file_path)
 
 def grafico_closeness(df_bairros, n):
     # Ordenar por número de casos
@@ -455,7 +600,7 @@ def grafico_closeness(df_bairros, n):
     plt.grid(axis="y", linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_closeness_" + str(n) + ".png"
+    file_path = "datasets/output/graphs/closeness/grafico_closeness_" + str(n) + ".png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -475,7 +620,7 @@ def grafico_closeness_casos(df_closeness, df_bairros):
     plt.grid(linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_closeness_casos.png"
+    file_path = "datasets/output/graphs/closeness/grafico_closeness_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -549,9 +694,9 @@ def calcular_pagerank(df_nodes, df_edges, damping=0.85, max_iter=100, tol=1e-6):
     ]).sort_values(by="PageRank", ascending=False)
 
     # 📌 4. Salvar os resultados
-    output_file = "./datasets/bairros_pagerank.csv"
-    pagerank_df.to_csv(output_file, index=False)
-    print(f"PageRank calculado e salvo em: {output_file}")
+    file_path = "datasets/output/dados/pagerank/bairros_pagerank.csv"
+    pagerank_df.to_csv(file_path, index=False)
+    print(f"PageRank calculado e salvo em: {file_path}")
 
 def grafico_pagerank(df_pagerank, n):
     # Ordenar por PageRank
@@ -567,7 +712,7 @@ def grafico_pagerank(df_pagerank, n):
     plt.grid(axis="y", linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_pagerank_" + str(n) + ".png"
+    file_path = "datasets/output/graphs/pagerank/grafico_pagerank_" + str(n) + ".png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -587,7 +732,7 @@ def grafico_pagerank_casos(df_pagerank, df_bairros):
     plt.grid(linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_pagerank_casos.png"
+    file_path = "datasets/output/graphs/pagerank/grafico_pagerank_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -636,8 +781,9 @@ def pearson_correlation_coefficient(df_nodes, df_edges):
     ])
 
     # 📌 3. Salvar os resultados em um arquivo CSV
-    bairros_df.to_csv("./datasets/bairros_assortatividade.csv", index=False)
-    print("Correlação individual por bairro salva em ./datasets/bairros_assortatividade.csv")
+    file_path = "datasets/output/dados/assortatividade/bairros_assortatividade.csv"
+    bairros_df.to_csv(file_path, index=False)
+    print("Assortatividade salva em", file_path)
 
 def grafico_assortatividade(df_bairros, n):
     # Ordenar por diferença percentual
@@ -653,7 +799,24 @@ def grafico_assortatividade(df_bairros, n):
     plt.grid(axis="y", linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_assortatividade_" + str(n) + ".png"
+    file_path = "datasets/output/graphs/assortatividade/grafico_assortatividade_" + str(n) + ".png"
+    plt.savefig(file_path, dpi=300, bbox_inches="tight")
+
+    # Fechar a figura para liberar memória
+    plt.close()
+    print("Gráfico salvo em", file_path)
+
+def grafico_assortatividade_casos(df_assortatividade):
+    # 📌 3. Criar o gráfico de dispersão
+    plt.figure(figsize=(8, 8))
+    plt.scatter(df_assortatividade["Media Casos Vizinhos"], df_assortatividade["Casos"], color="skyblue", alpha=0.7)
+    plt.xlabel("Média de Casos dos Vizinhos", fontsize=14)  # Ajuste o tamanho do label do eixo X
+    plt.ylabel("Número de Casos", fontsize=14)  # Ajuste o tamanho do label do eixo Y
+    plt.title("Assortatividade: Casos vs. Média de Casos dos Vizinhos por Bairro", fontsize=16)  # Ajuste o tamanho do título
+    plt.grid(linestyle="--", alpha=0.7)
+
+    # Salvar o gráfico como um arquivo PNG
+    file_path = "datasets/output/graphs/assortatividade/grafico_assortatividade_casos.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -677,9 +840,6 @@ def calcular_pvalor_assortatividade(df_assortatividade):
 
     # 📌 2. Calcular a correlação de Pearson e o p-valor
     correlacao, p_valor = pearsonr(casos_bairros, media_casos_vizinhos)
-
-    print(f"Correlação de Pearson: {correlacao:.4f}")
-    print(f"P-valor: {p_valor:.4f}")
     
     return correlacao, p_valor
 
@@ -784,8 +944,9 @@ def detectar_comunidades(df_nodes, df_edges):
     ])
 
     # 📌 4. Salvar os resultados em um arquivo CSV
-    comunidades_df.to_csv("./datasets/bairros_comunidades.csv", index=False)
-    print("Detecção de comunidades salva em ./datasets/bairros_comunidades.csv")
+    file_path = "datasets/output/dados/comunidades/bairros_comunidades.csv"
+    comunidades_df.to_csv(file_path, index=False)
+    print("Comunidades salvas em", file_path)
 
 def grafo_por_comunidade(df_nodes, df_edges, df_communities, name):
     # 📌 2. Criar o Grafo Geral
@@ -832,65 +993,6 @@ def grafo_por_comunidade(df_nodes, df_edges, df_communities, name):
 
     # Criar um dicionário {ID: Nome do Bairro}
     label_map = {row["ID"]: row["Bairro"] for _, row in df_nodes.iterrows() if row["Tipo"] == 2}
-
-    # # Criar um layout ForceAtlas2 para cada comunidade
-    # for community in unique_communities:
-    #     subgraph_nodes = [node for node in G.nodes if comunidade_map[node] == community]
-    #     SG = G.subgraph(subgraph_nodes)
-
-    #     if len(SG.nodes) > 1:  # Evita comunidades isoladas de um único nó
-    #         forceatlas2 = ForceAtlas2(
-    #             outboundAttractionDistribution=True,
-    #             jitterTolerance=1.0,
-    #             barnesHutOptimize=True,
-    #             barnesHutTheta=1.2,
-    #             scalingRatio=2.0,
-    #             strongGravityMode=False,
-    #             gravity=1.0
-    #         )
-
-    #         # Gerar posições usando ForceAtlas2
-    #         with HiddenPrints():
-    #             pos = forceatlas2.forceatlas2_networkx_layout(SG, iterations=2000)
-
-    #         # Criar cores para os nós da comunidade
-    #         node_colors = [color_map[community] for _ in SG.nodes]
-
-    #         # 📌 5. Plotar cada comunidade separadamente
-    #         plt.figure(figsize=(10, 7))
-            
-    #         # Desenhar os nós e arestas
-    #         nx.draw(SG, pos, with_labels=False, node_size=[tamanho_nos.get(node, min_size) for node in SG.nodes],
-    #                 node_color=node_colors, edge_color="gray", alpha=0.8)
-            
-    #         # 🔹 Exibir nomes dos bairros nos nós
-    #         nx.draw_networkx_labels(SG, pos, labels={node: label_map.get(node, "Desconhecido") for node in SG.nodes}, font_size=4)
-
-         
-    #     if len(SG.nodes) == 1:
-    #         print(f"Comunidade {community} possui apenas um nó isolado!")
-
-    #         # Capturar o único nó
-    #         single_node = list(SG.nodes)[0]
-            
-    #         plt.figure(figsize=(10, 7))
-    #         nx.draw_networkx_nodes(SG, pos={single_node: (0, 0)}, 
-    #                             node_size=tamanho_nos.get(single_node, min_size), 
-    #                             node_color=[color_map[community]])
-
-    #         nx.draw_networkx_labels(SG, pos={single_node: (0, 0)}, 
-    #                     labels={single_node: label_map.get(single_node, "Desconhecido")}, 
-    #                     font_size=4)
-
-
-    #         plt.axis("off")
-    #         plt.gca().set_frame_on(False)
-
-    #     plt.title(f"ForceAtlas2 - Comunidade {community} - " + name)
-    #     file_path = f"./datasets/graphs/{name}/comunidade_{community}.png"
-    #     plt.savefig(file_path,format="png", dpi=300, bbox_inches="tight")
-    #     print(f"Comunidade {community} salva em {file_path}")
-    #     plt.close()
 
     # 📌 3.1 Remover comunidades isoladas com poucos nós
     min_nos_por_comunidade = 10  # Defina um valor adequado
@@ -959,7 +1061,7 @@ def grafo_por_comunidade(df_nodes, df_edges, df_communities, name):
 
     # Configuração do gráfico
     plt.title("ForceAtlas2 - Grafo Geral de Comunidades - " + name)
-    file_path = "./datasets/graphs/" + name + "/grafo_geral_" + name + ".png"
+    file_path = "datasets/output/graphs/comunidades/" + name + "/grafo_geral_" + name + ".png"
 
     # Salvar a imagem sem espaços desnecessários
     plt.savefig(file_path, format="png", dpi=300, bbox_inches="tight")
@@ -973,19 +1075,6 @@ def grafico_comunidade(df_communities, df_aux, name, coluna):
     # 📌 2. Unir os DataFrames de Comunidade e Número de Casos
     df_communities = df_communities.merge(df_aux, how="left", left_on="ID", right_on="ID")
 
-    # valor_comunidade = df_communities["Comunidade"].unique()
-    # # somar os valores de da coluna para cada comunidade
-    # somas = []
-    # for i in valor_comunidade:
-    #     # bairros com a mesma comunidade
-    #     bairros = df_communities[df_communities["Comunidade"] == i]
-    #     soma = 0 
-    #     for _, row in bairros.iterrows():
-    #         soma += row[coluna]
-    #     somas.append(soma)
-
-    # print(somas)
-
     # 📌 3. Criar o gráfico de dispersão
     plt.figure(figsize=(10, 7))
     # plt.scatter(valor_comunidade, somas, color="skyblue", alpha=0.7)
@@ -997,7 +1086,7 @@ def grafico_comunidade(df_communities, df_aux, name, coluna):
     plt.grid(linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/" + name + "/grafico_" + name1 + "_" + coluna + ".png"
+    file_path = "datasets/output/graphs/comunidades/" + name + "/grafico_" + name1 + "_" + coluna + ".png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -1013,11 +1102,12 @@ def normalizar_bairros(df_bairros):
 
     maximo = df_bairros["N de casos Total"].max()
 
-    df_bairros = df_bairros[(df_bairros["N de casos Total"] < 12 * media)]
+    df_bairros = df_bairros[(df_bairros["N de casos Total"] < 5 * media)]
 
     # 📌 2. Salvar 
-    df_bairros.to_csv("./datasets/bairros_normalizados.csv", index=False)
-    print("Bairros normalizados salvos em ./datasets/bairros_normalizados.csv")
+    file_path = "datasets/output/dados/bairros_normalizados.csv"
+    df_bairros.to_csv(file_path, index=False)
+    print("Bairros normalizados salvos em", file_path)
 
     return df_bairros
 
@@ -1059,9 +1149,10 @@ def media_idade(df_nodes, df_aux):
         df_aux.at[i, "Media Idade"] = media_idade
         df_aux.at[i, "Desvio Padrao Idade"] = desvio_padrao
 
-
-    df_aux.to_csv("./datasets/media_idade.csv", index=False)
-    print("Média e desvio padrão de idade salvo em ./datasets/media_idade.csv")
+    # Salvar CSV com os resultados
+    file_path = "datasets/output/dados/media/media_idade.csv"
+    df_aux.to_csv(file_path, index=False)
+    print("Média de idade salva em", file_path)
 
     return df_aux
 
@@ -1112,8 +1203,9 @@ def media_cor(df_nodes, df_aux):
     df_aux["Desvio Padrao Cor"] = df_aux["ID"].map(desvio_padrao_cor)
 
     # Salvar CSV com os resultados
-    df_aux.to_csv("./datasets/media_cor.csv", index=False)
-    print("Cor predominante salva em ./datasets/media_cor.csv")
+    file_path = "datasets/output/dados/media/media_cor.csv"
+    df_aux.to_csv(file_path, index=False)
+    print("Cor predominante salva em", file_path)
 
     return df_aux
 
@@ -1164,8 +1256,9 @@ def media_escolaridade(df_nodes, df_aux):
     df_aux["Desvio Padrao Escolaridade"] = df_aux["ID"].map(desvio_padrao_escolaridade)
 
     # Salvar CSV com os resultados
-    df_aux.to_csv("./datasets/media_escolaridade.csv", index=False)
-    print("Escolaridade predominante salva em ./datasets/media_escolaridade.csv")
+    file_path = "datasets/output/dados/media/media_escolaridade.csv"
+    df_aux.to_csv(file_path, index=False)
+    print("Escolaridade predominante salva em", file_path)
 
     return df_aux
 
@@ -1212,8 +1305,9 @@ def media_classificacao(df_nodes, df_aux):
     df_aux["Desvio Padrao Classificacao"] = df_aux["ID"].map(desvio_padrao_classificacao)
 
     # Salvar CSV com os resultados
-    df_aux.to_csv("./datasets/media_classificacao.csv", index=False)
-    print("classificacao predominante salva em ./datasets/media_classificacao.csv")
+    file_path = "datasets/output/dados/media/media_classificacao.csv"
+    df_aux.to_csv(file_path, index=False)
+    print("Classificacao predominante salva em", file_path)
 
     return df_aux
 
@@ -1230,7 +1324,7 @@ def grafico_idade_grau_casos(df_nodes):
     plt.grid(linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_idade_classificacao.png"
+    file_path = "datasets/output/graphs/gerais/grafico_idade_classificacao.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -1251,7 +1345,7 @@ def grafico_media_idade_grau_casos(df_idade, df_classificacao):
     plt.grid(linestyle="--", alpha=0.7)
 
     # Salvar o gráfico como um arquivo PNG
-    file_path = "./datasets/graphs/grafico_media_idade_classificacao.png"
+    file_path = "datasets/output/graphs/media/grafico_media_idade_classificacao.png"
     plt.savefig(file_path, dpi=300, bbox_inches="tight")
 
     # Fechar a figura para liberar memória
@@ -1260,8 +1354,13 @@ def grafico_media_idade_grau_casos(df_idade, df_classificacao):
     print("Gráfico salvo em", file_path)
     
 def main():
+    df_divinopolis = pd.read_csv("datasets/output/dados/dados_divinopolis.csv")
+    grafico_distribuicao_idade(df_divinopolis)
+    grafico_distribuicao_cor(df_divinopolis)
+    grafico_distribuicao_escolaridade(df_divinopolis)
+
     # Carregar os dados do arquivo nodes.csv
-    df_bairros = pd.read_csv("./datasets/nodes_bairros.csv") 
+    df_bairros = pd.read_csv("datasets/output/dados/nodes-edges/nodes_bairros.csv") 
     grafico_bairro_casos(df_bairros, 10)
     
     # estudo da dispersão dos casos em relação a idadae, raca/cor e escolaridade
@@ -1269,19 +1368,19 @@ def main():
     df_bairros = normalizar_bairros(df_bairros)
 
     # Carregar os dados dos arquivos nodes.csv e edges.csv
-    df_nodes = pd.read_csv("./datasets/nodes.csv")
-    df_edges = pd.read_csv("./datasets/edges.csv")
+    df_nodes = pd.read_csv("datasets/output/dados/nodes-edges/nodes.csv")
+    df_edges = pd.read_csv("datasets/output/dados/nodes-edges/edges.csv")
 
     # 📌 1. Calcular Métricas
     # centralidade de betweenness para entender a importância dos bairros
     betweenness_centrality(df_nodes, df_edges)
-    df_betweenness = pd.read_csv("./datasets/bairros_betweenness.csv")
+    df_betweenness = pd.read_csv("datasets/output/dados/betweenness/bairros_betweenness.csv")
     grafico_betweenness(df_betweenness, 10)
     grafico_betweenness_casos(df_betweenness, df_bairros)
 
     # centralidade de closeness para entender a proximidade dos bairros de acordo com a quantidade de casos
     closeness_centrality(df_nodes, df_edges)
-    df_closeness = pd.read_csv("./datasets/bairros_closeness.csv")
+    df_closeness = pd.read_csv("datasets/output/dados/closeness/bairros_closeness.csv")
     grafico_closeness(df_closeness, 10)
     grafico_closeness_casos(df_closeness, df_bairros)
     
@@ -1290,17 +1389,20 @@ def main():
 
     # pagerank para entender a importância dos bairros
     calcular_pagerank(df_nodes, df_edges)
-    df_pagerank = pd.read_csv("./datasets/bairros_pagerank.csv")
+    df_pagerank = pd.read_csv("datasets/output/dados/pagerank/bairros_pagerank.csv")
     grafico_pagerank(df_pagerank, 10)
     grafico_pagerank_casos(df_pagerank, df_bairros)
 
     # coeficiente de correlação de Pearson para entender a relação entre a quantidade de casos dos bairros e seus vizinhos
     pearson_correlation_coefficient(df_nodes, df_edges)
-    df_assortatividade = pd.read_csv("./datasets/bairros_assortatividade.csv")
+    df_assortatividade = pd.read_csv("datasets/output/dados/assortatividade/bairros_assortatividade.csv")
     grafico_assortatividade(df_assortatividade, 10)
+    grafico_assortatividade_casos(df_assortatividade)
 
     # p-valor para entender a significância estatística da correlação de Pearson
     correlacao, p_valor = calcular_pvalor_assortatividade(df_assortatividade)
+    print(f"Correlação de Pearson: {correlacao:.4f}")
+    print(f"P-valor: {p_valor:.4f}")
     # 📌 3. Interpretar o p-valor
     if p_valor < 0.05:
         print("A correlação é estatisticamente significativa (p < 0.05).")
@@ -1312,7 +1414,7 @@ def main():
     
     # 📌 2. Detectar Comunidades
     detectar_comunidades(df_nodes, df_edges)
-    df_comunidades = pd.read_csv("./datasets/bairros_comunidades.csv")
+    df_comunidades = pd.read_csv("datasets/output/dados/comunidades/bairros_comunidades.csv")
     # gerar gráficos para cada modelo de comunidade
 
     color_map = {}
@@ -1331,7 +1433,7 @@ def main():
         
         i = 0
         for df_aux1 in [df_nodes[df_nodes["Tipo"] == 2], df_betweenness, df_closeness, df_pagerank, df_assortatividade]:
-            coluna = "N de casos Total" if i == 0 else "Diferenca Percentual" if i == 4 else df_aux1.columns[2]
+            coluna = "N de casos Total" if i == 0 else "Media Casos Vizinhos" if i == 4 else df_aux1.columns[2]
             print(coluna)   
             grafico_comunidade(df_aux, df_aux1, name, coluna)
             i += 1
@@ -1339,25 +1441,25 @@ def main():
     # Definir a cor branca para a comunidade -1
     color_map[-1] = (1.0, 1.0, 1.0, 1.0)  # Branco em formato RGBA
 
-
     df_aux = pd.DataFrame()
     df_aux["ID"] = df_bairros["ID"]
     df_aux["Bairro"] = df_bairros["Bairro"]
     df_idade = media_idade(df_nodes, df_aux)
     df_cor = media_cor(df_nodes, df_aux)
     df_escolaridade = media_escolaridade(df_nodes, df_aux)
+    df_classificacao = media_classificacao(df_nodes, df_aux)
 
-    df_idade = pd.read_csv("./datasets/media_idade.csv")
-    df_cor = pd.read_csv("./datasets/media_cor.csv")
-    df_escolaridade = pd.read_csv("./datasets/media_escolaridade.csv")
+    df_idade = pd.read_csv("datasets/output/dados/media/media_idade.csv")
+    df_cor = pd.read_csv("datasets/output/dados/media/media_cor.csv")
+    df_escolaridade = pd.read_csv("datasets/output/dados/media/media_escolaridade.csv")
+    df_classificacao = pd.read_csv("datasets/output/dados/media/media_classificacao.csv")
 
     grafico_idade_casos(df_nodes)
     grafico_cor_casos(df_nodes)
     grafico_escolaridade_casos(df_nodes)
+    grafico_classificacao_casos(df_nodes)
 
-    # gerar gráficos para cada métrica
-    # graficos idade e numero de casos
-    
+    # grafico idade e numero de casos
     grafico_media_idade_casos(df_idade, df_bairros, color_map)
 
     # grafico cor predominante e numero de casos
@@ -1366,14 +1468,8 @@ def main():
     # grafico escolaridade predominante e numero de casos
     grafico_media_escolaridade_casos(df_escolaridade, df_bairros, color_map)
 
-    df_classificacao = media_classificacao(df_nodes, df_aux)
-    grafico_classificacao_casos(df_nodes)
+    # grafico classificacao predominante e numero de casos
     grafico_media_classificacao_casos(df_classificacao, df_bairros, color_map)
-
-
-    # analisar a correlação entre as métricas
-    grafico_idade_grau_casos(df_nodes)
-    grafico_media_idade_grau_casos(df_idade, df_classificacao)
                                    
 if __name__ == "__main__":
     main()

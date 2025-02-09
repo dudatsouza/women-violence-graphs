@@ -1,1 +1,1 @@
-# Estudo e Análise de Violência Contra Mulheres em Divinópolis Usando Grafos
+# Análise Geoespacial da Violência Contra a Mulher: Detecção de Padrões e Clusters para Monitoramento Contı́nuo

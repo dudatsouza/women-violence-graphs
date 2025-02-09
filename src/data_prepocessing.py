@@ -123,12 +123,12 @@ def remover_dados_irelevantes(df):
 
 if __name__ == '__main__':
     # carregar os dados
-    df_crimes = pd.read_csv("./datasets/violencias/crimes.csv", 
+    df_crimes = pd.read_csv("datasets/input/violencias/crimes.csv", 
                 delimiter=',', # Especifica o delimitador correto
                 encoding='utf-8', # Especifica a codificação correta
                 engine='python' # Especifica o engine correto
                 )
-    df_localidade = pd.read_csv("./datasets/localidade/localidade.csv",
+    df_localidade = pd.read_csv("datasets/input/localidade/localidade.csv",
                 delimiter=',', # Especifica o delimitador correto
                 encoding='utf-8',  # Especifica a codificação correta
                 engine='python' # Especifica o engine correto
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     print("Coluna de id adicionada com sucesso!")
 
     # criar arquivo dados.csv
-    df_merged.to_csv("./datasets/dados_pre.csv", index=False)
+    df_merged.to_csv("datasets/output/dados/dados_pre.csv", index=False)
     print("Arquivo dados_pre.csv criado com sucesso!")
 
    
