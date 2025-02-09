@@ -2,3 +2,4 @@ datasets/violencias/crimes.csv filter=lfs diff=lfs merge=lfs -text
 datasets/violencias/violencia_mg_2014_2021.csv filter=lfs diff=lfs merge=lfs -text
 datasets/dados_pre.csv filter=lfs diff=lfs merge=lfs -text
 datasets/input/violencias/crimes.csv filter=lfs diff=lfs merge=lfs -text
+datasets/output/dados/dados_pre.csv filter=lfs diff=lfs merge=lfs -text
